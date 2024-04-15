@@ -1,24 +1,54 @@
 const express = require('express');
 const bodyparser = require('body-parser');
+//const passport = require('passport');
+//const LocalStrategy = require('passport-local').Strategy;
 const Menu = require('./models/MenuItem');
-const Person = require('./models/person'); 
+const passport = require('./auth');
+//const Person = require('./models/person'); 
 const app = express();
 const db = require('./db');
 require('dotenv').config();
-app.use(bodyparser.json())
+app.use(bodyparser.json());
 
+const PORT = process.env.PORT || 3000;
+
+const logRequest = (req,res,next) => {
+    console.log(`${new Date().toLocaleString()} Request Made to : ${req.originalUrl}`);
+    next();
+}
+app.use(logRequest);
+
+/* passport.use(new LocalStrategy(async (USERNAME,password,done) => {
+    try{
+     console.log("Received Credentials :", USERNAME, password);
+     const user = await Person.findOne({username:USERNAME});
+     if(!user){
+        return done(null,false,{message:"Incorrect username."});
+     }
+     const isPasswordMatch = user.password === password ? true : false;
+     if(isPasswordMatch){
+        return done(null,user);
+      }
+      else{
+        return done(null,false,{message:"Incorrect password"});
+      }
+    }
+    catch(err){
+   return done(err);
+    }
+}))*/
+
+app.use(passport.initialize());
+const localAuthMiddleware = passport.authenticate('local',{session:false})
 app.get('/',function(req,res){
    res.send("Welcome to my hotel...How i can help you..")
-   console.log(res.status().json());
 })
 
 const personRoutes = require('./routes/personRoutes');
 app.use('/person',personRoutes);
 
 const menuRoutes = require('./routes/menuRoutes');
-app.use('/menu',menuRoutes);
-
-const PORT = process.env.PORT || 3000;
+app.use('/menu',localAuthMiddleware,menuRoutes);
 /*app.post('/person',async function(req,res){
    try{
       const data = req.body;
