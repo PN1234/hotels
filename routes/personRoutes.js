@@ -73,7 +73,7 @@ router.get('/profile',jwtAuthMiddleware,async (req,res) => {
     }
 })
 
-router.get('',jwtAuthMiddleware,async function(req,res){
+router.get('',async function(req,res){
     try{
       const data = await Person.find();
       //const result = data.filter((val) => val.work == "waiter")
